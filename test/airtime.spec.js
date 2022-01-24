@@ -1,21 +1,28 @@
 'use strict';
 
 const axios = require('axios');
-const moment = require('moment');
+const _ = require('lodash');
 
 const URL = 'https://dublindigitalradio.airtime.pro/api/';
 
-let mockMoment = sinon.stub();
-mockMoment.returns(moment.unix(1482363557071));
-
 // mock.onGet(/.*/).reply(200, { data: 'bar' })
 
-const airtime = require('../src/index').init({stationName: 'dublindigitalradio'});
+// remove (R) from end of show name and make lower case
+function trimShowName(showName) {
+  return _.replace(_.replace(showName, /\(R\)/i, ''), /\(repeat\)/i, '')
+    .trim()
+    .toLowerCase();
+}
+
+const airtime = require('../src/index').init({
+  stationName: 'dublindigitalradio',
+  showNameModifier: trimShowName,
+});
 
 describe('airtime client library', () => {
   sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
   describe('liveInfoV2', () => {
-    it('calls axios.get', async  () => {
+    it('calls axios.get', async () => {
       await airtime.liveInfoV2();
       sinon.assert.calledWith(axios.get, `${URL}live-info-v2`);
     });
@@ -106,7 +113,9 @@ describe('airtime client library', () => {
     });
     it('calls axios.get with appropriate paramaters', async () => {
       await airtime.itemHistoryFeed({ start: 'a', end: 'b' });
-      sinon.assert.calledWith(axios.get, `${URL}item-history-feed`, { params: { start: 'a', end: 'b' } });
+      sinon.assert.calledWith(axios.get, `${URL}item-history-feed`, {
+        params: { start: 'a', end: 'b' },
+      });
     });
   });
   describe('liveInfoV2Params', () => {
@@ -171,7 +180,7 @@ describe('airtime client library', () => {
           { name: 'c (repeat)', val: 5 },
         ],
       };
-      airtime.makeShowDict(firstIn).should.eql(thenOut);
+      airtime.makeShowDict(firstIn, trimShowName).should.eql(thenOut);
     });
   });
 });

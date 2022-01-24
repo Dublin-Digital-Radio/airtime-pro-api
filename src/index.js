@@ -3,16 +3,8 @@
 const axios = require('axios');
 const he = require('he');
 const _ = require('lodash');
-const moment = require('moment');
 
 const { errorHandler } = require('./axios-error-handler');
-
-// remove (R) from end of show name and make lower case
-function trimShowName(showName) {
-  return _.replace(_.replace(showName, /\(R\)/i, ''), /\(repeat\)/i, '')
-    .trim()
-    .toLowerCase();
-}
 
 // These 3 data structures define the airtime API - we use them to generate functions
 // that call each endpoint and handle params appropriately.
@@ -41,25 +33,27 @@ const axiosGet = (url, opts) =>
     .then(r => r.data)
     .catch(errorHandler);
 
+const defaultOptions = { showNameModifier: x => x };
+
 exports.init = function (config) {
   if (!config || !config.stationName) {
     throw new Error('stationName is not defined');
   }
 
-  this.config = config;
-  this.airtimeURI = `https://${config.stationName}.airtime.pro/api/`;
+  config = { ...defaultOptions, ...config };
+  const airtimeURI = `https://${config.stationName}.airtime.pro/api/`;
 
   // the next 3 loops just generate functions for each of the endpoints
   // defined in the 3 data structures above
   for (let endpoint of calls) {
-    this[_.camelCase(endpoint)] = () => axiosGet(`${this.airtimeURI}${endpoint}`);
+    this[_.camelCase(endpoint)] = () => axiosGet(`${airtimeURI}${endpoint}`);
   }
 
   for (let [endpoint, methodName, varName] of showCalls) {
     methodName = _.isNil(methodName) ? _.camelCase(endpoint) : methodName;
     this[methodName] = showID => {
       if (!showID) throw new Error('showID must be defined');
-      return axiosGet(`${this.airtimeURI}${endpoint}`, {
+      return axiosGet(`${airtimeURI}${endpoint}`, {
         params: { [varName]: showID },
       });
     };
@@ -71,17 +65,17 @@ exports.init = function (config) {
       // check there are no extraneous parameters
       const wrong = _.difference(_.keys(params), otherParams);
       if (wrong.length) throw new Error(`unknown parameters : ${wrong}`);
-      return axiosGet(`${this.airtimeURI}${endpoint}`, { params });
+      return axiosGet(`${airtimeURI}${endpoint}`, { params });
     };
   }
 
   // utility functions
 
   // take a list of show data and return an object with show name as key
-  function makeShowDict(showList) {
+  this.makeShowDict = (showList) => {
     const showDict = {};
     for (let show of showList) {
-      const showName = trimShowName(show.name);
+      const showName = config.showNameModifier(show.name);
       if (!_.has(showDict, showName)) showDict[showName] = [];
       showDict[showName] = showDict[showName].concat(show);
     }
@@ -92,12 +86,12 @@ exports.init = function (config) {
 
   // transform the data returned by the `shows` endpoint into a more useful dictionary format
   // with show name as key
-  this.showsDict = () => this.shows().then(makeShowDict);
+  this.showsDict = () => this.shows().then(this.makeShowDict);
 
   // transform the week schedule data into a dictionary format with show name as key
   this.showSchedulesFromWeek = () => {
     return this.weekInfo().then(results => {
-      return makeShowDict(
+      return this.makeShowDict(
         Object.values(results)
           .flat()
           .filter(x => !!x && !!x.name)
@@ -108,14 +102,8 @@ exports.init = function (config) {
   };
 
   this.showSchedulesByNameFromWeek = showName => {
-    return this.showSchedulesFromWeek().then(x => x[trimShowName(showName)]);
+    return this.showSchedulesFromWeek().then(x => x[config.showNameModifier(showName)]);
   };
-
-  // export some utility functions so we can test them
-  // eslint-disable-next-line no-undef
-  if (!_.isUndefined(process) && process.env.NODE_ENV === 'test') {
-    this.makeShowDict = makeShowDict;
-  }
 
   return this;
 };
