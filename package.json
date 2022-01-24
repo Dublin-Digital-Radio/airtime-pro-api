@@ -1,0 +1,50 @@
+{
+  "name": "airtime-pro-api",
+  "version": "1.0.0",
+  "description": "Library for interaction with airtime.pro API - https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test nyc --reporter=html mocha \".//test/*.spec.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DublinDigitalRadioGmail/airtime-pro-api.git"
+  },
+  "author": "DDR",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DublinDigitalRadioGmail/airtime-pro-api/issues"
+  },
+  "homepage": "https://github.com/DublinDigitalRadioGmail/airtime-pro-api#readme",
+  "dependencies": {
+    "axios": "^0.25.0",
+    "he": "^1.2.0",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-promise": "^5.2.0",
+    "mocha": "^9.2.0",
+    "nyc": "^15.1.0",
+    "prettier": "^2.5.1",
+    "proxyquire": "^2.1.3",
+    "sinon": "^12.0.1"
+  },
+  "nyc": {
+    "sourceMap": false
+  },
+  "mocha": {
+    "require": "mocha.conf.js"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "arrowParens": "avoid"
+  }
+}
