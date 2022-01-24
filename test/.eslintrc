@@ -1,0 +1,17 @@
+{
+  "rules": {
+    "no-invalid-this": 0
+  },
+  "globals": {
+    "before": false,
+    "after": false,
+    "sinon": false,
+    "beforeEach": false,
+    "setImmediate": false,
+    "require": false,
+    "expect": false,
+    "afterEach": false,
+    "describe": false,
+    "it": false
+  }
+}

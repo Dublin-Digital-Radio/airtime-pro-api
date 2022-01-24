@@ -1,8 +1,6 @@
 'use strict';
 
-// TODO - need to overhaul mocking of axios in this module
-
-const proxyquire = require('proxyquire').noPreserveCache();
+const axios = require('axios');
 const moment = require('moment');
 
 const URL = 'https://dublindigitalradio.airtime.pro/api/';
@@ -10,41 +8,40 @@ const URL = 'https://dublindigitalradio.airtime.pro/api/';
 let mockMoment = sinon.stub();
 mockMoment.returns(moment.unix(1482363557071));
 
-const mockObject = { data: 'bar' };
-let get = sinon.stub();
-get.resolves(mockObject);
-let axios = { get };
-const airtime = proxyquire('../src/index', { axios, moment: mockMoment });
+// mock.onGet(/.*/).reply(200, { data: 'bar' })
+
+const airtime = require('../src/index').init({stationName: 'dublindigitalradio'});
 
 describe('airtime client library', () => {
+  sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
   describe('liveInfoV2', () => {
-    it('calls axios.get', () => {
-      airtime.liveInfoV2();
-      sinon.assert.calledWith(get, `${URL}live-info-v2`);
+    it('calls axios.get', async  () => {
+      await airtime.liveInfoV2();
+      sinon.assert.calledWith(axios.get, `${URL}live-info-v2`);
     });
   });
   describe('weekInfo', () => {
-    it('calls axios.get', () => {
-      airtime.weekInfo();
-      sinon.assert.calledWith(get, `${URL}week-info`);
+    it('calls axios.get', async () => {
+      await airtime.weekInfo();
+      sinon.assert.calledWith(axios.get, `${URL}week-info`);
     });
   });
   describe('stationMetadata', () => {
-    it('calls axios.get', () => {
-      airtime.stationMetadata();
-      sinon.assert.calledWith(get, `${URL}station-metadata`);
+    it('calls axios.get', async () => {
+      await airtime.stationMetadata();
+      sinon.assert.calledWith(axios.get, `${URL}station-metadata`);
     });
   });
   describe('stationLogo', () => {
-    it('calls axios.get', () => {
-      airtime.stationLogo();
-      sinon.assert.calledWith(get, `${URL}station-logo`);
+    it('calls axios.get', async () => {
+      await airtime.stationLogo();
+      sinon.assert.calledWith(axios.get, `${URL}station-logo`);
     });
   });
   describe('shows', () => {
-    it('calls axios.get', () => {
-      airtime.shows();
-      sinon.assert.calledWith(get, `${URL}shows`);
+    it('calls axios.get', async () => {
+      await airtime.shows();
+      sinon.assert.calledWith(axios.get, `${URL}shows`);
     });
   });
   describe('show', () => {
@@ -55,9 +52,9 @@ describe('airtime client library', () => {
       } catch (e) {} // eslint-disable-line no-empty
       sinon.assert.threw(show);
     });
-    it('calls axios.get', () => {
-      airtime.show(1);
-      sinon.assert.calledWith(get, `${URL}shows`);
+    it('calls axios.get', async () => {
+      await airtime.show(1);
+      sinon.assert.calledWith(axios.get, `${URL}shows`);
     });
   });
   describe('showLogo', () => {
@@ -68,9 +65,9 @@ describe('airtime client library', () => {
       } catch (e) {} // eslint-disable-line no-empty
       sinon.assert.threw(showLogo);
     });
-    it('calls axios.get', () => {
-      airtime.showLogo(1);
-      sinon.assert.calledWith(get, `${URL}show-logo`);
+    it('calls axios.get', async () => {
+      await airtime.showLogo(1);
+      sinon.assert.calledWith(axios.get, `${URL}show-logo`);
     });
   });
   describe('showTracks', () => {
@@ -81,9 +78,9 @@ describe('airtime client library', () => {
       } catch (e) {} // eslint-disable-line no-empty
       sinon.assert.threw(showTracks);
     });
-    it('calls axios.get', () => {
-      airtime.showTracks(1);
-      sinon.assert.calledWith(get, `${URL}show-tracks`);
+    it('calls axios.get', async () => {
+      await airtime.showTracks(1);
+      sinon.assert.calledWith(axios.get, `${URL}show-tracks`);
     });
   });
   describe('showSchedules', () => {
@@ -94,9 +91,9 @@ describe('airtime client library', () => {
       } catch (e) {} // eslint-disable-line no-empty
       sinon.assert.threw(showSchedules);
     });
-    it('calls axios.get', () => {
-      airtime.showSchedules(1);
-      sinon.assert.calledWith(get, `${URL}show-schedules`);
+    it('calls axios.get', async () => {
+      await airtime.showSchedules(1);
+      sinon.assert.calledWith(axios.get, `${URL}show-schedules`);
     });
   });
   describe('itemHistoryFeed', () => {
@@ -107,9 +104,9 @@ describe('airtime client library', () => {
       } catch (e) {} // eslint-disable-line no-empty
       sinon.assert.threw(itemHistoryFeed);
     });
-    it('calls axios.get with appropriate paramaters', () => {
-      airtime.itemHistoryFeed({ start: 'a', end: 'b' });
-      sinon.assert.calledWith(get, `${URL}item-history-feed`, { params: { start: 'a', end: 'b' } });
+    it('calls axios.get with appropriate paramaters', async () => {
+      await airtime.itemHistoryFeed({ start: 'a', end: 'b' });
+      sinon.assert.calledWith(axios.get, `${URL}item-history-feed`, { params: { start: 'a', end: 'b' } });
     });
   });
   describe('liveInfoV2Params', () => {
@@ -120,21 +117,21 @@ describe('airtime client library', () => {
       } catch (e) {} // eslint-disable-line no-empty
       sinon.assert.threw(liveInfoV2Params);
     });
-    it('calls axios.get with appropriate paramaters', () => {
-      airtime.liveInfoV2Params({ days: 10, shows: 2 });
-      sinon.assert.calledWith(get, `${URL}live-info-v2`, { params: { days: 10, shows: 2 } });
+    it('calls axios.get with appropriate paramaters', async () => {
+      await airtime.liveInfoV2Params({ days: 10, shows: 2 });
+      sinon.assert.calledWith(axios.get, `${URL}live-info-v2`, { params: { days: 10, shows: 2 } });
     });
   });
   describe('showsDict', () => {
-    it('calls axios.get', () => {
-      airtime.showsDict();
-      sinon.assert.calledWith(get, `${URL}shows`);
+    it('calls axios.get', async () => {
+      await airtime.showsDict();
+      sinon.assert.calledWith(axios.get, `${URL}shows`);
     });
   });
   describe('showSchedulesByNameFromWeek', () => {
-    it('calls axios.get', () => {
-      airtime.showSchedulesFromWeek();
-      sinon.assert.calledWith(get, `${URL}week-info`);
+    it('calls axios.get', async () => {
+      await airtime.showSchedulesFromWeek();
+      sinon.assert.calledWith(axios.get, `${URL}week-info`);
     });
     // TODO
     // it("correctly handles encoded characters", () => {
@@ -175,39 +172,6 @@ describe('airtime client library', () => {
         ],
       };
       airtime.makeShowDict(firstIn).should.eql(thenOut);
-    });
-  });
-  describe('scheduleByDay ', () => {
-    it('converts the airtime api result to schedule for the next 7 days', () => {
-      const mockAirtimeResult = {
-        monday: ['show1', 'show2'],
-        tuesday: ['show11', 'show22'],
-        wednesday: ['show21', 'show22'],
-        thursday: ['show31', 'show32'],
-        friday: ['show41', 'show42'],
-        saturday: ['show51', 'show52'],
-        sunday: ['show61', 'show62'],
-        nextmonday: ['show71', 'show72'],
-        nexttuesday: ['show81', 'show82'],
-        nextwednesday: ['show91', 'show92'],
-        nextthursday: ['show101', 'show102'],
-        nextfriday: ['show111', 'show122'],
-        nextsaturday: ['show131', 'show142'],
-        nextsunday: ['show151', 'show16'],
-      };
-      // Converted schedule for the next 7 days
-      const expectedResult = [
-        ['show21', 'show22'],
-        ['show31', 'show32'],
-        ['show41', 'show42'],
-        ['show51', 'show52'],
-        ['show61', 'show62'],
-        ['show71', 'show72'],
-        ['show81', 'show82'],
-      ];
-      //Date.now = jest.fn(() => 1482363367071); // eslint-disable-line no-undef
-
-      airtime.scheduleByDay(mockAirtimeResult).should.eql(expectedResult);
     });
   });
 });
