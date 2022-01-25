@@ -5,8 +5,6 @@ const _ = require('lodash');
 
 const URL = 'https://dublindigitalradio.airtime.pro/api/';
 
-// mock.onGet(/.*/).reply(200, { data: 'bar' })
-
 // remove (R) from end of show name and make lower case
 function trimShowName(showName) {
   return _.replace(_.replace(showName, /\(R\)/i, ''), /\(repeat\)/i, '')
@@ -20,48 +18,79 @@ const airtime = require('../src/index').init({
 });
 
 describe('airtime client library', () => {
-  sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
   describe('liveInfoV2', () => {
+    it('raises an error if called with unexpected parameters', () => {
+      let liveInfoV2 = sinon.spy(airtime.liveInfoV2);
+      try {
+        liveInfoV2({ a: 'bar', b: 'foo' });
+      } catch (e) {} // eslint-disable-line no-empty
+      sinon.assert.threw(liveInfoV2);
+    });
+    it('raises an error if called with wrong param types', () => {
+      let liveInfoV2 = sinon.spy(airtime.liveInfoV2);
+      try {
+        liveInfoV2({ days: 'x', shows: 2 });
+      } catch (e) {} // eslint-disable-line no-empty
+      sinon.assert.threw(liveInfoV2);
+    });
     it('calls axios.get', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
       await airtime.liveInfoV2();
-      sinon.assert.calledWith(axios.get, `${URL}live-info-v2`);
+      sinon.assert.calledWith(axios.get, `${URL}live-info-v2`, { params: {} });
+    });
+    it('calls axios.get with appropriate params', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
+      await airtime.liveInfoV2({ days: 10, shows: 2 });
+      sinon.assert.calledWith(axios.get, `${URL}live-info-v2`, { params: { days: 10, shows: 2 } });
+    });
+  });
+  describe('liveInfo', () => {
+    it('raises an error if called with a type not in the enum', () => {
+      let liveInfo = sinon.spy(airtime.liveInfo);
+      try {
+        liveInfo({ type: 'x' });
+      } catch (e) {} // eslint-disable-line no-empty
+      sinon.assert.threw(liveInfo);
+    });
+    it('calls axios.get with appropriate params', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
+      await airtime.liveInfo({ type: 'interval', limit: 10 });
+      sinon.assert.calledWith(axios.get, `${URL}live-info`, {
+        params: { type: 'interval', limit: 10 },
+      });
     });
   });
   describe('weekInfo', () => {
     it('calls axios.get', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
       await airtime.weekInfo();
-      sinon.assert.calledWith(axios.get, `${URL}week-info`);
+      sinon.assert.calledWith(axios.get, `${URL}week-info`, { params: {} });
     });
   });
   describe('stationMetadata', () => {
     it('calls axios.get', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
       await airtime.stationMetadata();
-      sinon.assert.calledWith(axios.get, `${URL}station-metadata`);
+      sinon.assert.calledWith(axios.get, `${URL}station-metadata`, { params: {} });
     });
   });
   describe('stationLogo', () => {
     it('calls axios.get', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
       await airtime.stationLogo();
-      sinon.assert.calledWith(axios.get, `${URL}station-logo`);
+      sinon.assert.calledWith(axios.get, `${URL}station-logo`, { params: {} });
     });
   });
   describe('shows', () => {
     it('calls axios.get', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
       await airtime.shows();
-      sinon.assert.calledWith(axios.get, `${URL}shows`);
+      sinon.assert.calledWith(axios.get, `${URL}shows`, { params: {} });
     });
-  });
-  describe('show', () => {
-    it('raises an error if not called with showID', () => {
-      let show = sinon.spy(airtime.show);
-      try {
-        show();
-      } catch (e) {} // eslint-disable-line no-empty
-      sinon.assert.threw(show);
-    });
-    it('calls axios.get', async () => {
-      await airtime.show(1);
-      sinon.assert.calledWith(axios.get, `${URL}shows`);
+    it('calls axios.get with correct params', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
+      await airtime.shows({ showID: 10 });
+      sinon.assert.calledWith(axios.get, `${URL}shows`, { params: { show_id: 10 } });
     });
   });
   describe('showLogo', () => {
@@ -73,8 +102,9 @@ describe('airtime client library', () => {
       sinon.assert.threw(showLogo);
     });
     it('calls axios.get', async () => {
-      await airtime.showLogo(1);
-      sinon.assert.calledWith(axios.get, `${URL}show-logo`);
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
+      await airtime.showLogo({ showID: 1 });
+      sinon.assert.calledWith(axios.get, `${URL}show-logo`, { params: { id: 1 } });
     });
   });
   describe('showTracks', () => {
@@ -86,8 +116,9 @@ describe('airtime client library', () => {
       sinon.assert.threw(showTracks);
     });
     it('calls axios.get', async () => {
-      await airtime.showTracks(1);
-      sinon.assert.calledWith(axios.get, `${URL}show-tracks`);
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
+      await airtime.showTracks({ showID: 1 });
+      sinon.assert.calledWith(axios.get, `${URL}show-tracks`, { params: { instance_id: 1 } });
     });
   });
   describe('showSchedules', () => {
@@ -99,12 +130,13 @@ describe('airtime client library', () => {
       sinon.assert.threw(showSchedules);
     });
     it('calls axios.get', async () => {
-      await airtime.showSchedules(1);
-      sinon.assert.calledWith(axios.get, `${URL}show-schedules`);
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
+      await airtime.showSchedules({ showID: 1 });
+      sinon.assert.calledWith(axios.get, `${URL}show-schedules`, { params: { show_id: 1 } });
     });
   });
   describe('itemHistoryFeed', () => {
-    it('raises an error if not called with unexpected parameters', () => {
+    it('raises an error if called with unexpected parameters', () => {
       let itemHistoryFeed = sinon.spy(airtime.itemHistoryFeed);
       try {
         itemHistoryFeed({ a: 'bar', b: 'foo' });
@@ -112,35 +144,25 @@ describe('airtime client library', () => {
       sinon.assert.threw(itemHistoryFeed);
     });
     it('calls axios.get with appropriate paramaters', async () => {
-      await airtime.itemHistoryFeed({ start: 'a', end: 'b' });
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
+      await airtime.itemHistoryFeed({ start: 'a', end: 'b', showID: 20 });
       sinon.assert.calledWith(axios.get, `${URL}item-history-feed`, {
-        params: { start: 'a', end: 'b' },
+        params: { start: 'a', end: 'b', instance_id: 20 },
       });
-    });
-  });
-  describe('liveInfoV2Params', () => {
-    it('raises an error if not called with unexpected parameters', () => {
-      let liveInfoV2Params = sinon.spy(airtime.liveInfoV2Params);
-      try {
-        liveInfoV2Params({ a: 'bar', b: 'foo' });
-      } catch (e) {} // eslint-disable-line no-empty
-      sinon.assert.threw(liveInfoV2Params);
-    });
-    it('calls axios.get with appropriate paramaters', async () => {
-      await airtime.liveInfoV2Params({ days: 10, shows: 2 });
-      sinon.assert.calledWith(axios.get, `${URL}live-info-v2`, { params: { days: 10, shows: 2 } });
     });
   });
   describe('showsDict', () => {
     it('calls axios.get', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
       await airtime.showsDict();
-      sinon.assert.calledWith(axios.get, `${URL}shows`);
+      sinon.assert.calledWith(axios.get, `${URL}shows`, { params: {} });
     });
   });
   describe('showSchedulesByNameFromWeek', () => {
     it('calls axios.get', async () => {
+      sinon.stub(axios, 'get').returns(Promise.resolve({ data: 'bar' }));
       await airtime.showSchedulesFromWeek();
-      sinon.assert.calledWith(axios.get, `${URL}week-info`);
+      sinon.assert.calledWith(axios.get, `${URL}week-info`, { params: {} });
     });
     // TODO
     // it("correctly handles encoded characters", () => {
@@ -183,4 +205,8 @@ describe('airtime client library', () => {
       airtime.makeShowDict(firstIn, trimShowName).should.eql(thenOut);
     });
   });
+});
+
+afterEach(function () {
+  sinon.restore();
 });

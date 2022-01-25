@@ -6,25 +6,40 @@ const _ = require('lodash');
 
 const { errorHandler } = require('./axios-error-handler');
 
-// These 3 data structures define the airtime API - we use them to generate functions
-// that call each endpoint and handle params appropriately.
-//
-// First are the endpoints that take no parameters:
-const calls = ['live-info-v2', 'week-info', 'station-metadata', 'station-logo', 'shows'];
-
-// Then we have the endpoints that take a show_id - for some reason three different name
-// are used for the show id. We hide this - we generate functions that only take
-// a show_id parameter.
-const showCalls = [
-  ['shows', 'show', 'show_id'],
-  ['show-logo', null, 'id'],
-  ['show-tracks', null, 'instance_id'],
-  ['show-schedules', null, 'show_id'],
-];
-// then we have the endpoints that take a variety of params
-const otherCalls = [
-  ['item-history-feed', null, ['start', 'end', 'timezone', 'instance_id']],
-  ['live-info-v2', 'liveInfoV2Params', ['days', 'shows', 'timezone']],
+// This data structure describes the various REST API calls
+// We use this to generate the JS API
+const allCalls = [
+  [
+    'live-info',
+    {
+      type: { type: 'string', enum: ['endofday', 'interval'] },
+      limit: { type: 'number' },
+    },
+  ],
+  [
+    'live-info-v2',
+    {
+      timezone: { type: 'string' },
+      days: { type: 'number' },
+      shows: { type: 'number' },
+    },
+  ],
+  ['week-info', { timezone: { type: 'string' } }],
+  ['station-metadata', {}],
+  ['station-logo', {}],
+  ['shows', { showID: { type: 'number', apiName: 'show_id' } }],
+  ['show-logo', { showID: { type: 'number', required: true, apiName: 'id' } }],
+  [
+    'item-history-feed',
+    {
+      start: { type: 'string' },
+      end: { type: 'string' },
+      timezone: { type: 'string' },
+      showID: { type: 'number', apiName: 'instance_id' },
+    },
+  ],
+  ['show-tracks', { showID: { type: 'number', required: true, apiName: 'instance_id' } }],
+  ['show-schedules', { showID: { type: 'number', required: true, apiName: 'show_id' } }],
 ];
 
 const axiosGet = (url, opts) =>
@@ -43,36 +58,60 @@ exports.init = function (config) {
   config = { ...defaultOptions, ...config };
   const airtimeURI = `https://${config.stationName}.airtime.pro/api/`;
 
-  // the next 3 loops just generate functions for each of the endpoints
-  // defined in the 3 data structures above
-  for (let endpoint of calls) {
-    this[_.camelCase(endpoint)] = () => axiosGet(`${airtimeURI}${endpoint}`);
-  }
+  for (let [endpoint, validations] of allCalls) {
+    this[_.camelCase(endpoint)] = (args = {}) => {
+      // check if any unexpected args passed
+      const unexpected = _.keys(args).filter(x => !_.has(validations, x));
+      if (!_.isEmpty(unexpected)) {
+        throw new Error(`Unexpected arguments: ${unexpected}`);
+      }
 
-  for (let [endpoint, methodName, varName] of showCalls) {
-    methodName = _.isNil(methodName) ? _.camelCase(endpoint) : methodName;
-    this[methodName] = showID => {
-      if (!showID) throw new Error('showID must be defined');
-      return axiosGet(`${airtimeURI}${endpoint}`, {
-        params: { [varName]: showID },
-      });
-    };
-  }
+      // check if any required args missing
+      const missing = Object.entries(validations)
+        .filter(([_x, y]) => y.required) // find required params from validators
+        .map(([k, _v]) => k) // get their names
+        .filter(x => !_.has(args, x)); // find the ones that are not present in params
+      if (!_.isEmpty(missing)) {
+        throw new Error(`Missing required params: ${missing}`);
+      }
 
-  for (let [endpoint, methodName, otherParams] of otherCalls) {
-    methodName = _.isNil(methodName) ? _.camelCase(endpoint) : methodName;
-    this[methodName] = params => {
-      // check there are no extraneous parameters
-      const wrong = _.difference(_.keys(params), otherParams);
-      if (wrong.length) throw new Error(`unknown parameters : ${wrong}`);
-      return axiosGet(`${airtimeURI}${endpoint}`, { params });
+      // now validate - iterate over params
+      const validatedArgs = {};
+      for (const [arg, value] of Object.entries(args)) {
+        // find the matching validation
+        const validation = validations[arg];
+        if (!validation) {
+          // if it's not found then it's a bug
+          throw new Error(`Unknown arg '${arg}'`);
+        }
+
+        // check the type
+        const typeOfVal = typeof value;
+        if (typeOfVal !== validation.type) {
+          throw new Error(`Arg ${arg} has type ${typeOfVal}, should be ${validation.type}`);
+        }
+
+        // check enum
+        if (validation.enum && !validation.enum.includes(value)) {
+          throw new Error(
+            `Arg '${arg}' has value '${value}' but must be one of ${validation.enum}`
+          );
+        }
+
+        // some params have a different name from what is used in the REST API
+        const apiName = validation.apiName ? validation.apiName : arg;
+        validatedArgs[apiName] = value;
+      }
+
+      // do the query
+      return axiosGet(`${airtimeURI}${endpoint}`, { params: validatedArgs });
     };
   }
 
   // utility functions
 
   // take a list of show data and return an object with show name as key
-  this.makeShowDict = (showList) => {
+  this.makeShowDict = showList => {
     const showDict = {};
     for (let show of showList) {
       const showName = config.showNameModifier(show.name);
@@ -80,7 +119,7 @@ exports.init = function (config) {
       showDict[showName] = showDict[showName].concat(show);
     }
     return showDict;
-  }
+  };
 
   // helper functions
 
