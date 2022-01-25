@@ -51,60 +51,66 @@ const axiosGet = (url, opts) =>
 const defaultOptions = { showNameModifier: x => x };
 
 exports.init = function (config) {
+  // module configuration
   if (!config || !config.stationName) {
     throw new Error('stationName is not defined');
   }
-
   config = { ...defaultOptions, ...config };
   const airtimeURI = `https://${config.stationName}.airtime.pro/api/`;
 
-  for (let [endpoint, validations] of allCalls) {
-    this[_.camelCase(endpoint)] = (args = {}) => {
-      // check if any unexpected args passed
-      const unexpected = _.keys(args).filter(x => !_.has(validations, x));
+  // generate the JS API - iterate over each endpoint defined in the data structure
+  // endpoint has a name, and a set of validators - for each REST API query param our function
+  // will accept a corresponding entry in its params object
+  // each one of these will have an entry in the list of validations
+  for (let [endpointName, validations] of allCalls) {
+    // create a JS function to call the endpoint
+    // Takes 1 argument - an object containing params
+    this[_.camelCase(endpointName)] = (params = {}) => {
+      // check if any unexpected params passed
+      const unexpected = _.keys(params).filter(x => !_.has(validations, x));
       if (!_.isEmpty(unexpected)) {
         throw new Error(`Unexpected arguments: ${unexpected}`);
       }
 
-      // check if any required args missing
+      // check if any required params missing
       const missing = Object.entries(validations)
         .filter(([_x, y]) => y.required) // find required params from validators
         .map(([k, _v]) => k) // get their names
-        .filter(x => !_.has(args, x)); // find the ones that are not present in params
+        .filter(x => !_.has(params, x)); // find the required entries that are not present in params
       if (!_.isEmpty(missing)) {
-        throw new Error(`Missing required params: ${missing}`);
+        throw new Error(`Missing required entry in params: ${missing}`);
       }
 
-      // now validate - iterate over params
+      // now validate - iterate over entries in params
       const validatedArgs = {};
-      for (const [arg, value] of Object.entries(args)) {
+      for (const [param, value] of Object.entries(params)) {
         // find the matching validation
-        const validation = validations[arg];
+        const validation = validations[param];
         if (!validation) {
           // if it's not found then it's a bug
-          throw new Error(`Unknown arg '${arg}'`);
+          throw new Error(`Unknown arg '${param}'`);
         }
 
         // check the type
         const typeOfVal = typeof value;
         if (typeOfVal !== validation.type) {
-          throw new Error(`Arg ${arg} has type ${typeOfVal}, should be ${validation.type}`);
+          throw new Error(`Param ${param} has type ${typeOfVal}, should be ${validation.type}`);
         }
 
         // check enum
         if (validation.enum && !validation.enum.includes(value)) {
           throw new Error(
-            `Arg '${arg}' has value '${value}' but must be one of ${validation.enum}`
+            `Param '${param}' has value '${value}' but must be one of ${validation.enum}`
           );
         }
 
         // some params have a different name from what is used in the REST API
-        const apiName = validation.apiName ? validation.apiName : arg;
+        const apiName = validation.apiName ? validation.apiName : param;
         validatedArgs[apiName] = value;
       }
 
       // do the query
-      return axiosGet(`${airtimeURI}${endpoint}`, { params: validatedArgs });
+      return axiosGet(`${airtimeURI}${endpointName}`, { params: validatedArgs });
     };
   }
 
