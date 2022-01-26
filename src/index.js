@@ -117,27 +117,30 @@ exports.init = function (config) {
   // transform the data returned by the `shows` endpoint into a more useful dictionary format
   // with show name as key
   this.showsDict = () =>
-    this.shows().then(x => {
-      makeShowDict(x, config.showNameModifier);
-    });
+    this.shows()
+      .then(x => makeShowDict(x, config.showNameModifier))
+      .catch(err => console.log(err));
 
   // transform the week schedule data into a dictionary format with show name as key
-  this.showSchedulesFromWeek = () => {
-    return this.weekInfo().then(results =>
-      makeShowDict(
-        Object.values(results)
-          .flat()
-          .filter(x => !!x && !!x.name)
-          // TODO - figure out where else we need to do this
-          .map(s => ({ ...s, name: he.decode(s.name) })),
-        config.showNameModifier
+  this.showSchedulesFromWeek = () =>
+    this.weekInfo()
+      .then(results => {
+        if (!results) return [];
+        return makeShowDict(
+          Object.values(results)
+            .flat()
+            .filter(x => !!x && !!x.name)
+            // TODO - figure out where else we need to do this
+            .map(s => ({ ...s, name: he.decode(s.name) })),
+          config.showNameModifier
+        )}
       )
-    );
-  };
+      .catch(err => console.log(err));
 
-  this.showSchedulesByNameFromWeek = showName => {
-    return this.showSchedulesFromWeek().then(x => x[config.showNameModifier(showName)]);
-  };
+  this.showSchedulesByNameFromWeek = showName =>
+    this.showSchedulesFromWeek()
+      .then(x => x[config.showNameModifier(showName)])
+      .catch(err => console.log(err));
 
   return this;
 };
