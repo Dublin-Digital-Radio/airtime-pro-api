@@ -28,6 +28,7 @@ Request:
 }
 
 function refReplacer() {
+  // catch circular references
   let m = new Map(), v= new Map(), init = null;
 
   return function(field, value) {

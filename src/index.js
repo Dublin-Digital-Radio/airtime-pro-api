@@ -114,6 +114,9 @@ exports.init = function (config) {
     };
   }
 
+  // higher level functions
+  // TODO - attach errorHandler to these
+
   // transform the data returned by the `shows` endpoint into a more useful dictionary format
   // with show name as key
   this.showsDict = () =>
