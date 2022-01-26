@@ -4,7 +4,7 @@ const axios = require('axios');
 const he = require('he');
 const _ = require('lodash');
 
-const { errorHandler } = require('./axios-error-handler');
+const { errorHandler, makeShowDict } = require('./utils');
 
 // This data structure describes the various REST API calls
 // We use this to generate the JS API
@@ -114,36 +114,25 @@ exports.init = function (config) {
     };
   }
 
-  // utility functions
-
-  // take a list of show data and return an object with show name as key
-  this.makeShowDict = showList => {
-    const showDict = {};
-    for (let show of showList) {
-      const showName = config.showNameModifier(show.name);
-      if (!_.has(showDict, showName)) showDict[showName] = [];
-      showDict[showName] = showDict[showName].concat(show);
-    }
-    return showDict;
-  };
-
-  // helper functions
-
   // transform the data returned by the `shows` endpoint into a more useful dictionary format
   // with show name as key
-  this.showsDict = () => this.shows().then(this.makeShowDict);
+  this.showsDict = () =>
+    this.shows().then(x => {
+      makeShowDict(x, config.showNameModifier);
+    });
 
   // transform the week schedule data into a dictionary format with show name as key
   this.showSchedulesFromWeek = () => {
-    return this.weekInfo().then(results => {
-      return this.makeShowDict(
+    return this.weekInfo().then(results =>
+      makeShowDict(
         Object.values(results)
           .flat()
           .filter(x => !!x && !!x.name)
           // TODO - figure out where else we need to do this
-          .map(s => ({ ...s, name: he.decode(s.name) }))
-      );
-    });
+          .map(s => ({ ...s, name: he.decode(s.name) })),
+        config.showNameModifier
+      )
+    );
   };
 
   this.showSchedulesByNameFromWeek = showName => {

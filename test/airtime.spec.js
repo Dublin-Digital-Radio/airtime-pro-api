@@ -4,6 +4,7 @@ const axios = require('axios');
 const _ = require('lodash');
 
 const URL = 'https://dublindigitalradio.airtime.pro/api/';
+const { makeShowDict } = require('../src/utils');
 
 // remove (R) from end of show name and make lower case
 function trimShowName(showName) {
@@ -202,7 +203,7 @@ describe('airtime client library', () => {
           { name: 'c (repeat)', val: 5 },
         ],
       };
-      airtime.makeShowDict(firstIn, trimShowName).should.eql(thenOut);
+      makeShowDict(firstIn, trimShowName).should.eql(thenOut);
     });
   });
 });
