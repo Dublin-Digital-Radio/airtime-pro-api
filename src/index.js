@@ -50,12 +50,15 @@ const axiosGet = (url, opts) =>
 
 const defaultOptions = { showNameModifier: x => x };
 
-exports.init = function (config) {
+exports.init = function (conf) {
   // module configuration
-  if (!config || !config.stationName) {
+  if (!conf || !conf.stationName) {
     throw new Error('stationName is not defined');
   }
-  config = { ...defaultOptions, ...config };
+  const config = defaultOptions;
+  for (let attrName in conf) {
+    config[attrName] = conf[attrName];
+  }
   const airtimeURI = `https://${config.stationName}.airtime.pro/api/`;
 
   // generate the JS API - iterate over each endpoint defined in the data structure
@@ -134,10 +137,13 @@ exports.init = function (config) {
             .flat()
             .filter(x => !!x && !!x.name)
             // TODO - figure out where else we need to do this
-            .map(s => ({ ...s, name: he.decode(s.name) })),
+            .map(s => {
+              s.name = he.decode(s.name);
+              return s;
+            }),
           config.showNameModifier
-        )}
-      )
+        );
+      })
       .catch(err => console.log(err));
 
   this.showSchedulesByNameFromWeek = showName =>
