@@ -10,18 +10,18 @@ const { errorHandler, makeShowDict } = require('./utils');
 // We use this to generate the JS API
 const allCalls = [
   [
-    'live-info',
-    {
-      type: { type: 'string', enum: ['endofday', 'interval'] },
-      limit: { type: 'number' },
-    },
-  ],
-  [
     'live-info-v2',
     {
       timezone: { type: 'string' },
       days: { type: 'number' },
       shows: { type: 'number' },
+    },
+  ],
+  [
+    'live-info',
+    {
+      type: { type: 'string', enum: ['endofday', 'interval'] },
+      limit: { type: 'number' },
     },
   ],
   ['week-info', { timezone: { type: 'string' } }],
@@ -150,6 +150,8 @@ exports.init = function (conf) {
     this.showSchedulesFromWeek()
       .then(x => x[config.showNameModifier(showName)])
       .catch(err => console.log(err));
+
+  this.allCalls = allCalls;
 
   return this;
 };
