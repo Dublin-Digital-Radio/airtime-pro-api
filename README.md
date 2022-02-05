@@ -36,48 +36,66 @@ a.stationMetadata().then(x => console.log(x))
 }
 ```
 
-# Endpoints
+# Functions
 
-## live-info-v2:
+## liveInfoV2:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Clive_info_v2%E2%80%9D)
-  - timezone (string) 
-  - days (number) 
-  - shows (number) 
 
-## live-info:
+This function takes a single parameter - an object containing the following:
+  - timezone (string) - optional
+  - days (number) - optional
+  - shows (number) - optional
+
+## liveInfo:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Clive_info%E2%80%9D)
-  - type (string) 
-  - limit (number) 
 
-## week-info:
+This function takes a single parameter - an object containing the following:
+  - type (string) - optional
+  - limit (number) - optional
+
+## weekInfo:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Cweek_info%E2%80%9D)
-  - timezone (string) 
 
-## station-metadata:
+This function takes a single parameter - an object containing the following:
+  - timezone (string) - optional
+
+## stationMetadata:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Cstation_metadata%E2%80%9D)
 
-## station-logo:
+
+## stationLogo:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Cstation_logo%E2%80%9D)
+
 
 ## shows:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Cshows%E2%80%9D)
-  - showID (number) 
 
-## show-logo:
+This function takes a single parameter - an object containing the following:
+  - showID (number) - optional
+
+## showLogo:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Cshow_logo%E2%80%9D)
+
+This function takes a single parameter - an object containing the following:
   - showID (number) - required
 
-## item-history-feed:
+## itemHistoryFeed:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Citem_history_feed%E2%80%9D)
-  - start (string) 
-  - end (string) 
-  - timezone (string) 
-  - showID (number) 
 
-## show-tracks:
+This function takes a single parameter - an object containing the following:
+  - start (string) - optional
+  - end (string) - optional
+  - timezone (string) - optional
+  - showID (number) - optional
+
+## showTracks:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Cshow_tracks%E2%80%9D)
+
+This function takes a single parameter - an object containing the following:
   - showID (number) - required
 
-## show-schedules:
+## showSchedules:
 [Airtime documentation](https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API#%E2%80%9Cshow_schedules%E2%80%9D)
+
+This function takes a single parameter - an object containing the following:
   - showID (number) - required
