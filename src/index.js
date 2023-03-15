@@ -113,7 +113,9 @@ exports.init = function (conf) {
       }
 
       // do the query
-      return axiosGet(`${airtimeURI}${endpointName}`, { params: validatedArgs });
+      const url = `${airtimeURI}${endpointName}`;
+      console.log(`Airtime GET ${url}\n${JSON.stringify(validatedArgs, null , 2)}`)
+      return axiosGet(`${url}`, { params: validatedArgs });
     };
   }
 
