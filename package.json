@@ -1,5 +1,5 @@
 {
-  "name": "airtime-pro-api",
+  "name": "@dublin-digital-radio/airtime-pro-api",
   "version": "1.0.0",
   "description": "Library for interaction with airtime.pro API - https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API",
   "main": "src/index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DublinDigitalRadioGmail/airtime-pro-api.git"
+    "url": "git+https://github.com/Dublin-Digital-Radio/airtime-pro-api.git"
   },
-  "author": "DDR",
+  "author": "Dublin Digital Radio",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/DublinDigitalRadioGmail/airtime-pro-api/issues"
+    "url": "https://github.com/Dublin-Digital-Radio/airtime-pro-api/issues"
   },
-  "homepage": "https://github.com/DublinDigitalRadioGmail/airtime-pro-api#readme",
+  "homepage": "https://github.com/Dublin-Digital-Radio/airtime-pro-api#readme",
   "dependencies": {
     "axios": "1.x",
     "he": "1.x",
@@ -45,5 +45,11 @@
     "printWidth": 100,
     "singleQuote": true,
     "arrowParens": "avoid"
-  }
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "directories": {
+    "test": "test"
+  },
 }
