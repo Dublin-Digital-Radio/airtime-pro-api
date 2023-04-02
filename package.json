@@ -1,6 +1,6 @@
 {
   "name": "@dublin-digital-radio/airtime-pro-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Library for interaction with airtime.pro API - https://help.sourcefabric.org/hc/en-us/articles/115000382243-Airtime-Pro-API",
   "main": "src/index.js",
   "scripts": {
@@ -46,10 +46,7 @@
     "singleQuote": true,
     "arrowParens": "avoid"
   },
-  "scripts": {
-    "test": "mocha"
-  },
   "directories": {
     "test": "test"
-  },
+  }
 }

@@ -2,7 +2,10 @@
 
 const axios = require('axios');
 const he = require('he');
-const _ = require('lodash');
+const camelCase= require('lodash/camelCase');
+const keys= require('lodash/keys');
+const has= require('lodash/has');
+const isEmpty = require('lodash/isEmpty');
 
 const { errorHandler, makeShowDict } = require('./utils');
 
@@ -68,10 +71,10 @@ exports.init = function (conf) {
   for (let [endpointName, validations] of allCalls) {
     // create a JS function to call the endpoint
     // Takes 1 argument - an object containing params
-    this[_.camelCase(endpointName)] = (params = {}) => {
+    this[camelCase(endpointName)] = (params = {}) => {
       // check if any unexpected params passed
-      const unexpected = _.keys(params).filter(x => !_.has(validations, x));
-      if (!_.isEmpty(unexpected)) {
+      const unexpected = keys(params).filter(x => !has(validations, x));
+      if (!isEmpty(unexpected)) {
         throw new Error(`Unexpected arguments: ${unexpected}`);
       }
 
@@ -79,8 +82,8 @@ exports.init = function (conf) {
       const missing = Object.entries(validations)
         .filter(([_x, y]) => y.required) // find required params from validators
         .map(([k, _v]) => k) // get their names
-        .filter(x => !_.has(params, x)); // find the required entries that are not present in params
-      if (!_.isEmpty(missing)) {
+        .filter(x => !has(params, x)); // find the required entries that are not present in params
+      if (!isEmpty(missing)) {
         throw new Error(`Missing required entry in params: ${missing}`);
       }
 
